@@ -1,82 +1,124 @@
- Challenge Writeup – "Race to the Flag"
-This CTF challenge is based on logical flow manipulation, session management, and endpoint discovery.
+ Challenge Writeup – "IMPOSSIBLE LOGIN" (Beginner-Friendly)
+This CTF (Capture The Flag) challenge is based on:
 
-🔍 Step-by-Step Walkthrough
-Starting Point – /login
-The root (/) redirects to the /login page.
+Login flow tricks
 
-The login form expects a token, but there's no obvious way to get one from the login page itself.
+Session management
 
-Discovering Token – /pre-auth
-Manually navigating to the /pre-auth endpoint returns a token:
+Finding hidden pages (endpoints)
 
-php-template
+🔍 Step-by-Step Guide
+1. Starting Point – /login
+When you open the main page ( / ), it automatically redirects you to /login.
+
+The login form asks for a token, but you don’t know where to get that token yet.
+
+2. Getting the Token – /pre-auth
+Try checking if there are other hidden pages.
+
+If you go to /pre-auth, you will see something like:
+
+yaml
 Copy
 Edit
-Your pre-auth token: <random_token>
-This token is stored server-side with a timestamp.
+Your pre-auth token: abc123xyz
+This is the token you need to log in.
 
-Logging In
-Copy the token from /pre-auth and submit it via the login form at /login.
+⚠️ Important: This token is only valid for 20 seconds! So be quick.
 
-If the token is valid and not older than 20 seconds, login succeeds and the session is set:
+3. Logging In
+Go back to the /login page.
+
+Paste the token from /pre-auth into the login form.
+
+If the token is still valid, you’ll successfully log in.
+
+Behind the scenes, this happens:
 
 python
 Copy
 Edit
 session['logged_in'] = True
 session['visited_race'] = False
-Exploring the Dashboard – /dashboard
-Once logged in, you're redirected to the dashboard.
+This means you're now logged in, but you haven't completed everything yet.
 
-However, there’s nothing special here—just a decoy to delay exploration.
+4. Exploring After Login – /dashboard
+After logging in, you’re sent to /dashboard.
 
-Clue Discovery – /about
-Although /about is not defined in the source code, the hint in the challenge description or possibly from a real interface (if it existed) suggests the word “race”.
+This page doesn’t show anything useful — it's just a distraction.
 
-This subtle hint leads us to try the /race endpoint.
+5. Looking for Clues – /about
+There's no real /about page, but the hint "race" may appear in a clue or description.
 
-Visiting the Hidden Endpoint – /race
-This page displays a message:
+That word leads us to try /race, a hidden endpoint.
 
-"You feel like you are on the right track..."
+6. The Hidden Page – /race
+When you visit /race, you see:
 
-More importantly, it sets a session flag:
+sql
+Copy
+Edit
+You feel like you are on the right track...
+More importantly, it updates your session:
 
 python
 Copy
 Edit
 session['visited_race'] = True
-Accessing the Flag – /get-flag
-Trying to visit /get-flag before visiting /race results in:
+This means your account now remembers that you visited /race.
 
-"You haven't explored enough."
+7. Getting the Flag – /get-flag
+Now try going to /get-flag.
 
-But after visiting /race, the flag is successfully shown:
+Two possible results:
+❌ If you didn’t visit /race first:
 
-html
+rust
+Copy
+Edit
+You haven't explored enough.
+✅ If you did visit /race:
+
 Copy
 Edit
 ACM{you_found_it}
-⚠️ Important Observations:
-The token is time-sensitive (valid only for 20 seconds).
+⚠️ Tricks & Distractions to Watch Out For:
+1. Token Time Limit
+The token only works for 20 seconds.
 
-The flag is conditionally displayed based on a session variable visited_race.
+If you’re too slow, you’ll need to go back to /pre-auth and get a new one.
 
-The /race endpoint acts as a required checkpoint to unlock the actual flag.
+2. Fake Flag – /fake-flag
+This page shows:
 
-Direct access to /get-flag without visiting /race will not reveal the flag.
+Copy
+Edit
+ACM{this_is_a_trap}
+It’s a decoy, not the real flag!
 
-🛑 Decoys and Misleads:
-The /fake-flag route displays a decoy flag: ACM{this_is_a_trap}.
+3. Forbidden Page – /debug
+If you try /debug, you get a 403 Forbidden error.
 
-The /debug route exists but returns a 403 Forbidden, serving as a distraction.
+It's just there to distract you.
 
-The /robots.txt file includes:
+4. Robots.txt File
+If you check /robots.txt, you see:
 
-text
+bash
 Copy
 Edit
 Disallow: /race
 Disallow: /debug
-This hints to careful players or crawlers that /race is something interesting to check.
+This file is meant for search engines, but you can use it to find hidden paths!
+
+✅ Final Summary
+To solve the challenge:
+
+Go to /pre-auth → copy the token.
+
+Use it at /login quickly.
+
+Visit /race to set the right session variable.
+
+Now go to /get-flag → 🎉 Flag revealed: ACM{you_found_it}
+
