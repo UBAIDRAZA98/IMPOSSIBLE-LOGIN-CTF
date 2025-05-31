@@ -1,4 +1,4 @@
-🧩 Challenge Writeup – "IMPOSSIBLE LOGIN"
+ Challenge Writeup – "Race to the Flag"
 This CTF challenge is based on logical flow manipulation, session management, and endpoint discovery.
 
 🔍 Step-by-Step Walkthrough
@@ -80,4 +80,3 @@ Edit
 Disallow: /race
 Disallow: /debug
 This hints to careful players or crawlers that /race is something interesting to check.
-
